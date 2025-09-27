@@ -1,0 +1,81 @@
+{
+  "name": "doctor-live",
+  "description": "Doctor Live - Voice Agent using LiveKit Agents",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "author": {
+    "name": "Caio Menezes",
+    "email": "caio.menezes@conexasaude.com.br",
+    "url": "https://www.conexasaude.com.br"
+  },
+  "keywords": [
+    "livekit",
+    "voice-agent",
+    "telemedicine",
+    "healthcare",
+    "ai",
+    "ai-agent",
+    "speech-to-text",
+    "stt",
+    "transcription",
+    "recording",
+    "egress",
+    "real-time",
+    "javascript",
+    "typescript",
+    "nodejs",
+    "agents",
+    "openai",
+    "cartesia",
+    "deepgram",
+    "silero"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint \"**/*.{ts,js}\"",
+    "lint:fix": "eslint --fix \"**/*.{ts,js}\"",
+    "format": "prettier . --write \"**/*.{ts,js,json,md}\"",
+    "format:check": "prettier . --check \"**/*.{ts,js,json,md}\"",
+    "test": "node --test --import tsx",
+    "test:watch": "node --test --watch --import tsx",
+    "dev": "tsx src/agent.ts dev",
+    "download-files": "pnpm run build && node dist/agent.js download-files",
+    "start": "node dist/agent.js start"
+  },
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "dependencies": {
+    "@fastify/autoload": "^6.3.1",
+    "@fastify/env": "^5.0.2",
+    "@fastify/jwt": "^10.0.0",
+    "@fastify/sensible": "^6.0.3",
+    "@livekit/agents": "^1.0.0",
+    "@livekit/agents-plugin-cartesia": "^1.0.0",
+    "@livekit/agents-plugin-deepgram": "^1.0.0",
+    "@livekit/agents-plugin-livekit": "^1.0.0",
+    "@livekit/agents-plugin-openai": "^1.0.0",
+    "@livekit/agents-plugin-silero": "^1.0.0",
+    "@livekit/noise-cancellation-node": "^0.1.9",
+    "@types/node": "^24.5.2",
+    "dotenv": "^17.2.1",
+    "fastify": "^5.6.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.34.0",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+    "@types/node": "^22.18.0",
+    "eslint": "^9.34.0",
+    "globals": "^16.3.0",
+    "jiti": "^2.5.1",
+    "prettier": "3.6.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.41.0"
+  }
+}
