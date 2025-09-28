@@ -26,9 +26,6 @@ importers:
       '@livekit/agents-plugin-cartesia':
         specifier: ^1.0.0
         version: 1.0.6(@livekit/agents@1.0.6(@livekit/rtc-node@0.13.19))(@livekit/rtc-node@0.13.19)
-      '@livekit/agents-plugin-deepgram':
-        specifier: ^1.0.0
-        version: 1.0.6(@livekit/agents@1.0.6(@livekit/rtc-node@0.13.19))(@livekit/rtc-node@0.13.19)
       '@livekit/agents-plugin-livekit':
         specifier: ^1.0.0
         version: 1.0.6(@livekit/agents@1.0.6(@livekit/rtc-node@0.13.19))
@@ -526,12 +523,6 @@ packages:
 
   '@livekit/agents-plugin-cartesia@1.0.6':
     resolution: {integrity: sha512-fMKHE3qio1UKlUPapkn+bUDt5WlhnEJJr+fGS5d+OlZcMyNerHhyXsDj1CwssSO9TVcEMeslbxt75v4bEscWaA==}
-    peerDependencies:
-      '@livekit/agents': 1.0.6
-      '@livekit/rtc-node': ^0.13.12
-
-  '@livekit/agents-plugin-deepgram@1.0.6':
-    resolution: {integrity: sha512-425vg5B3CalUBX3xOC5z3PEc7gMKdppbF2cQBCwy+ZtbevUG3RYAxx0GdG5cOFsu0sf9MVUg3csefoIYAqertQ==}
     peerDependencies:
       '@livekit/agents': 1.0.6
       '@livekit/rtc-node': ^0.13.12
@@ -2200,15 +2191,6 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.5
 
   '@livekit/agents-plugin-cartesia@1.0.6(@livekit/agents@1.0.6(@livekit/rtc-node@0.13.19))(@livekit/rtc-node@0.13.19)':
-    dependencies:
-      '@livekit/agents': 1.0.6(@livekit/rtc-node@0.13.19)
-      '@livekit/rtc-node': 0.13.19
-      ws: 8.18.3
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-
-  '@livekit/agents-plugin-deepgram@1.0.6(@livekit/agents@1.0.6(@livekit/rtc-node@0.13.19))(@livekit/rtc-node@0.13.19)':
     dependencies:
       '@livekit/agents': 1.0.6(@livekit/rtc-node@0.13.19)
       '@livekit/rtc-node': 0.13.19

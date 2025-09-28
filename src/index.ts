@@ -1,11 +1,10 @@
-
-import { AccessToken, EgressServiceClient, RoomServiceClient } from '@livekit/server-sdk';
-import fastify from 'fastify';
-import fs from 'fs';
-import path from 'path';
-import sensible from '@fastify/sensible';
 import env from '@fastify/env';
 import jwtPlugin from '@fastify/jwt';
+import sensible from '@fastify/sensible';
+import fastify from 'fastify';
+import fs from 'fs';
+import { AccessToken, DirectFileOutput, EgressClient, RoomServiceClient } from 'livekit-server-sdk';
+import path from 'path';
 
 const schema = {
   type: 'object',
@@ -15,7 +14,7 @@ const schema = {
     'LIVEKIT_API_SECRET',
     'JWT_SECRET',
     'RECORDINGS_DIR',
-    'PORT'
+    'PORT',
   ],
   properties: {
     LIVEKIT_URL: { type: 'string' },
@@ -23,16 +22,15 @@ const schema = {
     LIVEKIT_API_SECRET: { type: 'string' },
     JWT_SECRET: { type: 'string' },
     RECORDINGS_DIR: { type: 'string' },
-    PORT: { type: 'string', default: '3000' }
-  }
+    PORT: { type: 'string', default: '3000' },
+  },
 };
 
 const options = {
   confKey: 'config',
   schema,
-  dotenv: true
+  dotenv: true,
 };
-
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -60,7 +58,7 @@ async function buildServer() {
   const RECORDINGS_DIR = app.config.RECORDINGS_DIR;
 
   const roomService = new RoomServiceClient(LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET);
-  const egressService = new EgressServiceClient(LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET);
+  const egressClient = new EgressClient(LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET);
 
   if (!fs.existsSync(RECORDINGS_DIR)) {
     fs.mkdirSync(RECORDINGS_DIR, { recursive: true });
@@ -81,7 +79,7 @@ async function buildServer() {
     const { identity, room } = request.body as { identity: string; room: string };
     const token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
       identity,
-      room,
+      name: room
     });
     return reply.send({ token: token.toJwt() });
   });
@@ -89,16 +87,11 @@ async function buildServer() {
   app.post('/record/start', async (request, reply) => {
     const { room, participant } = request.body as { room: string; participant: string };
     try {
-      const result = await egressService.startTrackEgress({
-        roomName: room,
-        trackId: participant,
-        output: {
-          file: {
-            filepath: path.join(RECORDINGS_DIR, `${room}_${participant}_${Date.now()}.wav`),
-          },
-        },
-        audioOnly: true,
-      });
+      const outputFilePath = path.join(RECORDINGS_DIR, `${room}_${participant}_${Date.now()}.wav`);
+      const directFile = new DirectFileOutput({ filepath: outputFilePath });
+
+      const result = await egressClient.startTrackEgress(room, directFile, participant);
+
       return reply.send({ message: 'Gravação iniciada', egressId: result.egressId });
     } catch (err) {
       app.log.error(err);
@@ -109,7 +102,7 @@ async function buildServer() {
   app.post('/record/stop', async (request, reply) => {
     const { egressId } = request.body as { egressId: string };
     try {
-      await egressService.stopEgress(egressId);
+      await egressClient.stopEgress(egressId);
       return reply.send({ message: 'Gravação finalizada' });
     } catch (err) {
       app.log.error(err);
@@ -125,7 +118,7 @@ async function buildServer() {
   return app;
 }
 
-buildServer().then(app => {
+buildServer().then((app) => {
   app.listen({ port: Number(app.config.PORT), host: '0.0.0.0' }, (err, address) => {
     if (err) {
       app.log.error(err);

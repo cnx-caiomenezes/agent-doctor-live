@@ -9,7 +9,6 @@ import {
   voice,
 } from '@livekit/agents';
 import * as cartesia from '@livekit/agents-plugin-cartesia';
-import * as deepgram from '@livekit/agents-plugin-deepgram';
 import * as livekit from '@livekit/agents-plugin-livekit';
 import * as openai from '@livekit/agents-plugin-openai';
 import * as silero from '@livekit/agents-plugin-silero';
