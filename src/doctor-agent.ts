@@ -18,7 +18,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: '.env' });
 
 class Assistant extends voice.Agent {
   constructor() {
@@ -60,7 +60,7 @@ export default defineAgent({
       llm: new openai.LLM({ model: 'gpt-4o-mini' }),
       // Speech-to-text (STT) is your agent's ears, turning the user's speech into text that the LLM can understand
       // See all providers at https://docs.livekit.io/agents/integrations/stt/
-      stt: new deepgram.STT({ model: 'nova-3' }),
+      stt: openai.STT.withGroq(),
       // Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
       // See all providers at https://docs.livekit.io/agents/integrations/tts/
       tts: new cartesia.TTS({
@@ -72,15 +72,10 @@ export default defineAgent({
       vad: ctx.proc.userData.vad! as silero.VAD,
     });
 
-    // To use a realtime model instead of a voice pipeline, use the following session setup instead:
-    // const session = new voice.AgentSession({
-    //   // See all providers at https://docs.livekit.io/agents/integrations/realtime/
-    //   llm: new openai.realtime.RealtimeModel({ voice: 'marin' }),
-    // });
-
     // Metrics collection, to measure pipeline performance
     // For more information, see https://docs.livekit.io/agents/build/metrics/
     const usageCollector = new metrics.UsageCollector();
+    
     session.on(voice.AgentSessionEventTypes.MetricsCollected, (ev) => {
       metrics.logMetrics(ev.metrics);
       usageCollector.collect(ev.metrics);
