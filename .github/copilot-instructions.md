@@ -54,34 +54,39 @@ Construir um servidor LiveKit STT-LLM-TTT (Speech-to-Text, Language Model, Text-
 
 ---
 
-## Passos Básicos
+## Features
 
-### 1. Instalar e Configurar o LiveKit
+### 1. Suporte a chamadas de vídeo em tempo real entre participantes + agente anonimo (STT-LLM-TTT)
+#### 1.1. Configurar o servidor LiveKit para suportar chamadas de vídeo em tempo real.
+#### 1.2. Integrar o LiveKit Client SDK no frontend para permitir que os usuários iniciem e participem de chamadas de vídeo.
+#### 1.3. Implementar a lógica para o agente STT-LLM-TTT
+##### 1.3.1 STT: Integrar um serviço de reconhecimento de fala (Pago) para transcrever o áudio em texto.
+##### 1.3.2 LLM: Integrar um modelo de linguagem para processar o texto transcrito e gerar respostas ou ações.
+##### 1.3.3 TTT: Implementar a lógica para enviar as respostas ou ações de volta para os participantes na chamada.
+###### 1.3.3.1 Enviar dicas contextuais para um ou ambos os participantes utilizando feature LiveKit DataChannel.
 
-- Siga a documentação oficial: [LiveKit Docs](https://docs.livekit.io/)
-- Utilizar o LiveKit Cloud ou hospedar seu próprio servidor LiveKit.
-- Configurar variáveis de ambiente para o servidor LiveKit:
-  - `LIVEKIT_API_KEY`
-  - `LIVEKIT_API_SECRET`
-  - `LIVEKIT_URL` (Ex: `wss://your-livekit-server`)
-- Configurar o servidor Node.js com as dependências necessárias:
-  - `livekit-server-sdk`
-  - `fastify` (para o servidor web)
-  - `jsonwebtoken` (para geração de tokens JWT)
+### 2. Restringir a sala para dois participantes (Medico e Paciente)
+#### 2.1. Configurar o servidor para permitir apenas dois participantes por sala.
+#### 2.2. Implementar lógica para rejeitar conexões adicionais se a sala já estiver cheia.
+#### 2.3. Autenticar participantes via JWT.
+##### 2.3.1. Gerar tokens JWT com permissões adequadas para cada participante.
+##### 2.3.2. Validar tokens JWT no servidor antes de permitir a entrada na sala.
 
-### 2. Restringir a Sala para Dois Participantes
+### 3. Capturar track de áudio e vídeo de cada participante na sala
+#### 3.1. Utilizar a API de Egress do LiveKit para gravar o áudio de cada participante em arquivos separados.
+#### 3.2. Configurar o servidor para armazenar os arquivos de áudio localmente
+#### 3.3. Garantir que os arquivos sejam salvos em S3 após o término da chamada de forma assíncrona.
 
-### 3. Capturar o Áudio de Cada Participante
+### 4. Salvar texto completo da transcrição em S3
+#### 4.1. Salvar a transcrição completa após cada chamada.
 
-### 4. Salvar o Áudio Localmente Após o Fim da Reunião
-
-### 5. Exemplo de Fluxo
+### 5. Salvar arquivos de áudio em S3
+#### 5.1. Salvar os arquivos de áudio em S3 após o término da chamada.
 
 ---
 
 ## Observações
 
-- Certifique-se de que o servidor tenha espaço suficiente para armazenar os arquivos.
 - Considere implementar notificações ou logs para monitorar início e fim das gravações.
 - Para maior segurança, restrinja permissões de acesso aos arquivos gravados.
 - Garanta que os participantes da chamada estejam autenticados via JWT.
