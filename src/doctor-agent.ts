@@ -2,13 +2,13 @@ import {
   type JobContext,
   type JobProcess,
   WorkerOptions,
+  WorkerPermissions,
   cli,
   defineAgent,
   llm,
   metrics,
   voice,
 } from '@livekit/agents';
-import * as cartesia from '@livekit/agents-plugin-cartesia';
 import * as livekit from '@livekit/agents-plugin-livekit';
 import * as openai from '@livekit/agents-plugin-openai';
 import * as silero from '@livekit/agents-plugin-silero';
@@ -52,21 +52,10 @@ export default defineAgent({
     proc.userData.vad = await silero.VAD.load();
   },
   entry: async (ctx: JobContext) => {
-    // Set up a voice AI pipeline using OpenAI, Cartesia, Deepgram, and the LiveKit turn detector
+    // Set up a voice AI pipeline usando apenas texto (sem TTS)
     const session = new voice.AgentSession({
-      // A Large Language Model (LLM) is your agent's brain, processing user input and generating a response
-      // See all providers at https://docs.livekit.io/agents/integrations/llm/
       llm: new openai.LLM({ model: 'gpt-4o-mini' }),
-      // Speech-to-text (STT) is your agent's ears, turning the user's speech into text that the LLM can understand
-      // See all providers at https://docs.livekit.io/agents/integrations/stt/
       stt: openai.STT.withGroq(),
-      // Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
-      // See all providers at https://docs.livekit.io/agents/integrations/tts/
-      tts: new cartesia.TTS({
-        voice: '6f84f4b8-58a2-430c-8c79-688dad597532',
-      }),
-      // VAD and turn detection are used to determine when the user is speaking and when the agent should respond
-      // See more at https://docs.livekit.io/agents/build/turns
       turnDetection: new livekit.turnDetector.MultilingualModel(),
       vad: ctx.proc.userData.vad! as silero.VAD,
     });
@@ -74,10 +63,26 @@ export default defineAgent({
     // Metrics collection, to measure pipeline performance
     // For more information, see https://docs.livekit.io/agents/build/metrics/
     const usageCollector = new metrics.UsageCollector();
-    
+
     session.on(voice.AgentSessionEventTypes.MetricsCollected, (ev) => {
       metrics.logMetrics(ev.metrics);
       usageCollector.collect(ev.metrics);
+    });
+
+    // Intercepta texto gerado pelo LLM e envia via DataChannel
+    session.on(voice.AgentSessionEventTypes.UserInputTranscribed, ({ transcript }) => {
+      if (ctx.room && ctx.room.localParticipant) {
+        ctx.room.localParticipant.publishData(Buffer.from(transcript), {
+          reliable: true,
+          topic: 'transcript',
+        });
+
+        session.chatCtx.addMessage({ role: 'user', content: transcript });
+      }
+    });
+
+    session.on(voice.AgentSessionEventTypes.Error, (ev) => {
+      console.error('Agent session error:', ev.error);
     });
 
     const logUsage = async () => {
@@ -87,15 +92,16 @@ export default defineAgent({
 
     ctx.addShutdownCallback(logUsage);
 
-    // Start the session, which initializes the voice pipeline and warms up the models
     await session.start({
       agent: new Assistant(),
       room: ctx.room,
       inputOptions: {
-        // LiveKit Cloud enhanced noise cancellation
-        // - If self-hosting, omit this parameter
-        // - For telephony applications, use `BackgroundVoiceCancellationTelephony` for best results
         noiseCancellation: BackgroundVoiceCancellation(),
+        textEnabled: true,
+      },
+      outputOptions: {
+        transcriptionEnabled: true,
+        audioEnabled: false,
       },
     });
 
@@ -104,4 +110,11 @@ export default defineAgent({
   },
 });
 
-cli.runApp(new WorkerOptions({ agent: fileURLToPath(import.meta.url) }));
+cli.runApp(
+  new WorkerOptions({
+    agent: fileURLToPath(import.meta.url),
+    wsURL: process.env.LIVEKIT_URL as string,
+    port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
+    permissions: new WorkerPermissions(true, true, true, true, [], true),
+  }),
+);
