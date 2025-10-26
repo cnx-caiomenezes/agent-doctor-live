@@ -2,9 +2,8 @@
 # For more information on the build process, see https://docs.livekit.io/agents/ops/deployment/builds/
 # syntax=docker/dockerfile:1
 
-# Use the official Node.js v24 base image with Node.js 24.9.0
-# We use the slim variant to keep the image size smaller while still having essential tools
-FROM node:24.9-slim AS base
+ARG NODE_VERSION=25
+FROM node:${NODE_VERSION}-slim AS base
 
 # Configure pnpm installation directory and ensure it is on PATH
 ENV PNPM_HOME="/pnpm"

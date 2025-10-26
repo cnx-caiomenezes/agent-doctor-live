@@ -79,7 +79,7 @@ async function buildServer() {
     const { identity, room } = request.body as { identity: string; room: string };
     const token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
       identity,
-      name: room
+      name: room,
     });
     return reply.send({ token: token.toJwt() });
   });

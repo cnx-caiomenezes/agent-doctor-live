@@ -18,11 +18,11 @@ import type { VideoGrant } from 'livekit-server-sdk';
  * canUpdateOwnMetadata	{boolean} -	Allow participant to update its own metadata
  * hidden	{boolean} -	Hide participant from others in the room
  * kind	{string} - Type of participant (standard, ingress, egress, sip, or agent). this field is typically set by LiveKit internals.
-**/
+ **/
 
 /**
  * Generates a LiveKit access token for a given room and participant.
- * 
+ *
  * @param roomName - The name of the room to join.
  * @param participantName - The identity of the participant.
  * @returns {string} accessToken - A JWT access token string.
@@ -38,6 +38,7 @@ export const generateToken = async (roomName: string, participantName: string): 
 
   const accessToken = new AccessToken(DOCTOR_LIVE_API_KEY, DOCTOR_LIVE_API_SECRET, {
     identity: participantName,
+    ttl: '2h',
   });
 
   const videoGrant: VideoGrant = {

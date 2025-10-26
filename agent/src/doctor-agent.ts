@@ -1,14 +1,4 @@
-import {
-  type JobContext,
-  type JobProcess,
-  WorkerOptions,
-  WorkerPermissions,
-  cli,
-  defineAgent,
-  llm,
-  metrics,
-  voice,
-} from '@livekit/agents';
+import { type JobContext, type JobProcess, WorkerOptions, WorkerPermissions, cli, defineAgent, llm, metrics, voice } from '@livekit/agents';
 import * as livekit from '@livekit/agents-plugin-livekit';
 import * as openai from '@livekit/agents-plugin-openai';
 import * as silero from '@livekit/agents-plugin-silero';
@@ -16,6 +6,7 @@ import { BackgroundVoiceCancellation } from '@livekit/noise-cancellation-node';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
+
 
 dotenv.config({ path: '.env' });
 
@@ -52,12 +43,11 @@ export default defineAgent({
     proc.userData.vad = await silero.VAD.load();
   },
   entry: async (ctx: JobContext) => {
-    // Set up a voice AI pipeline usando apenas texto (sem TTS)
     const session = new voice.AgentSession({
       llm: new openai.LLM({ model: 'gpt-4o-mini' }),
-      stt: openai.STT.withGroq(),
+      stt: openai.STT.withGroq({ language: 'pt-BR' }),
       turnDetection: new livekit.turnDetector.MultilingualModel(),
-      vad: ctx.proc.userData.vad! as silero.VAD,
+      vad: ctx.proc.userData.vad as silero.VAD,
     });
 
     // Metrics collection, to measure pipeline performance
@@ -69,7 +59,6 @@ export default defineAgent({
       usageCollector.collect(ev.metrics);
     });
 
-    // Intercepta texto gerado pelo LLM e envia via DataChannel
     session.on(voice.AgentSessionEventTypes.UserInputTranscribed, ({ transcript }) => {
       if (ctx.room && ctx.room.localParticipant) {
         ctx.room.localParticipant.publishData(Buffer.from(transcript), {
@@ -83,6 +72,11 @@ export default defineAgent({
 
     session.on(voice.AgentSessionEventTypes.Error, (ev) => {
       console.error('Agent session error:', ev.error);
+    });
+
+    session.chatCtx.addMessage({
+      content: `The user speaks Portuguese. Respond in Portuguese.`,
+      role: 'system',
     });
 
     const logUsage = async () => {
@@ -102,6 +96,7 @@ export default defineAgent({
       outputOptions: {
         transcriptionEnabled: true,
         audioEnabled: false,
+        syncTranscription: true,
       },
     });
 

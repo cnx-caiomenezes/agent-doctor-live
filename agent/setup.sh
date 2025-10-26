@@ -17,23 +17,10 @@ if ! nvm ls 24.9.0 | grep -q 'v24.9.0'; then
 fi
 
 # Define versao do projeto
-nvm use 24.9.0
+nvm use 25.0.0
+
+# Define a versão padrão do Node.js para 25.0.0
+nvm default alias 25.0.0
 
 # Instala pnpm para gerenciar dependencias do projeto LiveKit
 npm install -g pnpm
-
-# Inicia o projeto com pnpm
-pnpm init --init-type module
-
-# Instala Typescript
-pnpm add -D typescript tsx
-
-# Inicia o projeto Typescript
-pnpm exec tsc --init
-
-# Instala dependencias do LiveKit
-pnpm add @livekit/agents \
-         livekit-server-sdk \
-         @livekit/agents-plugin-openai \
-         livekit-plugins-noise-cancellation \
-         dotenv

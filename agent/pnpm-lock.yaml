@@ -35,9 +35,6 @@ importers:
       '@livekit/noise-cancellation-node':
         specifier: ^0.1.9
         version: 0.1.9
-      '@types/node':
-        specifier: ^24.5.2
-        version: 24.5.2
       dotenv:
         specifier: ^17.2.1
         version: 17.2.2
@@ -57,6 +54,9 @@ importers:
       '@trivago/prettier-plugin-sort-imports':
         specifier: ^5.2.2
         version: 5.2.2(prettier@3.6.2)
+      '@types/node':
+        specifier: ^24.5.2
+        version: 24.5.2
       eslint:
         specifier: ^9.34.0
         version: 9.36.0(jiti@2.6.0)
