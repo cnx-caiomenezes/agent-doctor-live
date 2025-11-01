@@ -9,10 +9,10 @@
   --fg2: #4d4d4d;
   --fg3: #636363;
   --fg4: #707070;
-  --fgSerious: #db1b06;
+  --fgSerious: #ff2d55;
   --fgSuccess: #006430;
   --fgModerate: #a65006;
-  --fgAccent: #002cf2;
+  --fgAccent: #3CB4E7; /* Cor primária Conexa */
 
   --bg1: #f9f9f6;
   --bg2: #f3f3f1;
@@ -21,26 +21,26 @@
   --bgSerious2: #ffcdc7;
   --bgSuccess: #d1fadf;
   --bgModerate: #faedd1;
-  --bgAccent: #b3ccff;
-  --bgAccentPrimary: #e2ebfd;
+  --bgAccent: #d9f2fc; /* Variação clara da cor Conexa */
+  --bgAccentPrimary: #e5f7fd; /* Variação mais clara da cor Conexa */
 
   --separator1: #dbdbd8;
   --separator2: #bdbdbb;
   --separatorSerious: #ffcdc7;
   --separatorSuccess: #94dcb5;
   --separatorModerate: #fbd7a0;
-  --separatorAccent: #b3ccff;
+  --separatorAccent: #9fd9f0; /* Variação da cor Conexa */
 
-  --radius: 0.625rem;
+  --radius: 0.5rem; /* 8px - padrão Conexa */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: #002cf2;
-  --primary-hover: #0020b9;
-  --primary-foreground: oklch(0.985 0 0);
+  --primary: #3CB4E7; /* Cor primária Conexa */
+  --primary-hover: #2A9FD4; /* Hover mais escuro */
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: #f3f3f1;
@@ -74,7 +74,7 @@
   --fgSerious: #ff7566;
   --fgSuccess: #3bc981;
   --fgModerate: #ffb752;
-  --fgAccent: #6e9dfe;
+  --fgAccent: #3CB4E7; /* Cor primária Conexa mantida no dark */
 
   --bg1: #070707;
   --bg2: #131313;
@@ -83,15 +83,15 @@
   --bgSerious2: #5a1c16;
   --bgSuccess: #001905;
   --bgModerate: #1a0e04;
-  --bgAccent: #090c17;
-  --bgAccentPrimary: #0c1640;
+  --bgAccent: #0a1f28; /* Variação escura da cor Conexa */
+  --bgAccentPrimary: #0d2a36; /* Variação escura da cor Conexa */
 
   --separator1: #202020;
   --separator2: #30302f;
   --separatorSerious: #5a1c16;
   --separatorSuccess: #003213;
   --separatorModerate: #3f2208;
-  --separatorAccent: #0c1640;
+  --separatorAccent: #1a4a5c; /* Variação escura da cor Conexa */
 
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -99,9 +99,9 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.269 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: #1fd5f9;
-  --primary-hover: #19a7c7;
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: #3CB4E7; /* Cor primária Conexa */
+  --primary-hover: #56C0EC; /* Hover mais claro no dark mode */
+  --primary-foreground: #0a1f28;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: #131313;
@@ -189,8 +189,8 @@
   --color-button: var(--bg2);
   --color-button-hover: var(--bg3);
   --color-button-foreground: var(--fg1);
-  --color-button-primary: var(--bg2);
-  --color-button-primary-foreground: var(--fgSerious);
+  --color-button-primary: #3CB4E7; /* Cor primária Conexa para botões */
+  --color-button-primary-foreground: #ffffff;
   --color-button-secondary: var(--bgAccentPrimary);
   --color-button-secondary-foreground: var(--fgAccent);
 

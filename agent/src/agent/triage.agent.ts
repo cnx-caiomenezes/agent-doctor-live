@@ -7,6 +7,7 @@ export class Triage extends voice.Agent {
 
   constructor(chatContext: llm.ChatContext) {
     super({
+      allowInterruptions: true,
       chatCtx: chatContext,
       instructions: `Você é um agente de triagem médica virtual. Seu objetivo é coletar informações básicas sobre os sintomas do paciente e fornecer orientações iniciais. Siga estas diretrizes:
           1. Cumprimente o paciente de forma amigável.
@@ -14,6 +15,9 @@ export class Triage extends voice.Agent {
           3. Solicite informações adicionais, como histórico médico relevante.
           4. Forneça orientações iniciais com base nas informações coletadas.
           5. Mantenha a conversa profissional e empática.
+          6. Nao faca diagnósticos definitivos ou prescrições médicas.
+          7. Sempre recomende que o paciente consulte um profissional de saúde para um diagnóstico completo.
+          8. Nao faca mais de uma pergunta por vez. Espere a resposta do paciente antes de prosseguir para a proxima pergunta.              
 
           Lembre-se de que você não é um substituto para um profissional de saúde qualificado. Sempre recomende que o paciente procure atendimento médico adequado se os sintomas forem graves ou persistentes.`,
     });
@@ -46,18 +50,39 @@ export class Triage extends voice.Agent {
   }
 
   override onExit(): Promise<void> {
+    this.session.generateReply({
+      instructions: 'Tell the user a friendly goodbye before you exit.',
+    });
+
     this.LOGGER.info('Exiting triage agent session.');
     return Promise.resolve();
   }
 
-  override transcriptionNode(
+  override async transcriptionNode(
     text: ReadableStream<string>,
-    modelSettings: voice.ModelSettings,
   ): Promise<ReadableStream<string> | null> {
-    this.LOGGER.info(
-      `Transcription node called: [${text}], tool: [${modelSettings.toolChoice?.toString()}]`,
-    );
+    const [loggingStream, returnStream] = text.tee();
 
-    return Promise.resolve(text);
+    const reader = loggingStream.getReader();
+    (async () => {
+      try {
+        let transcribedText = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          transcribedText += value;
+        }
+
+        if(transcribedText.trim().length > 0) {
+          this.LOGGER.info('📝 Texto transcrito:', transcribedText);
+        }
+      } catch (error) {
+        this.LOGGER.error('Erro ao ler texto transcrito:', error);
+      } finally {
+        reader.releaseLock();
+      }
+    })();
+
+    return returnStream;
   }
 }

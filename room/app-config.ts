@@ -8,10 +8,10 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
   supportsVideoInput: true,
   supportsScreenShare: true,
   isPreConnectBufferEnabled: true,
-  logo: '/lk-logo.svg',
-  accent: '#002cf2',
-  logoDark: '/lk-logo-dark.svg',
-  accentDark: '#1fd5f9',
-  startButtonText: 'Start call',
-  agentName: "Doctor Live",
+  logo: '/conexa.svg',
+  accent: '#3CB4E7', // Cor primária Conexa
+  logoDark: '/conexa.svg',
+  accentDark: '#1075A0', // Cor secundária Conexa
+  startButtonText: 'Iniciar consulta',
+  agentName: 'triage-agent',
 };

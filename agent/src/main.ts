@@ -7,9 +7,9 @@ import {
   defineAgent,
   llm,
   metrics,
+  stt,
   voice,
 } from '@livekit/agents';
-import * as deepgram from '@livekit/agents-plugin-deepgram';
 import * as livekit from '@livekit/agents-plugin-livekit';
 import * as openai from '@livekit/agents-plugin-openai';
 import * as silero from '@livekit/agents-plugin-silero';
@@ -17,6 +17,8 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'node:url';
 import { getPatientPromptuary } from './agent/pre-warm/getPatientPromptuary';
 import { Triage } from './agent/triage.agent';
+import { textInputCallback } from './callbacks';
+import { registerRoomEvents, registerSessionEvents } from './events';
 
 dotenv.config({ path: '.env' });
 
@@ -33,56 +35,99 @@ export default defineAgent({
     );
   },
   entry: async (ctx: JobContext) => {
-    const session = new voice.AgentSession({
-      stt: new deepgram.STT({
-        model: 'nova-3',
-        language: 'pt-BR',
-        profanityFilter: true,
-      }),
+    try {
+      console.debug(ctx.job.metadata);
+      
+      const vad = ctx.proc.userData.vad! as silero.VAD;
 
-      llm: new openai.LLM({
-        model: 'gpt-4o-mini',
-        temperature: 0.3,
-      }),
+      const groqSTT = openai.STT.withGroq({
+        model: 'whisper-large-v3-turbo',
+        language: 'pt',
+      });
 
-      tts: new openai.TTS({
-        model: 'tts-1',
-        voice: 'nova',
-      }),
+      const streamAdaptedSTT = new stt.StreamAdapter(groqSTT, vad);
 
-      turnDetection: new livekit.turnDetector.MultilingualModel(),
+      const session = new voice.AgentSession({
+        stt: streamAdaptedSTT,
 
-      vad: ctx.proc.userData.vad! as silero.VAD,
+        llm: new openai.LLM({
+          model: 'gpt-4o-mini',
+          temperature: 0.3,
+        }),
 
-      userData: ctx.proc.userData,
-    });
+        tts: new openai.TTS({
+          model: 'tts-1',
+          voice: 'nova',
+          speed: 0.9,
+        }),
 
-    const usageCollector = new metrics.UsageCollector();
-    session.on(voice.AgentSessionEventTypes.MetricsCollected, (ev) => {
-      metrics.logMetrics(ev.metrics);
-      usageCollector.collect(ev.metrics);
-    });
+        turnDetection: new livekit.turnDetector.MultilingualModel(),
 
-    const logUsage = async () => {
-      const summary = usageCollector.getSummary();
-      console.log(`Usage: ${JSON.stringify(summary)}`);
-    };
+        vad: vad,
 
-    ctx.addShutdownCallback(logUsage);
+        userData: ctx.proc.userData,
+      });
 
-    const initialContext = llm.ChatContext.empty();
+      registerSessionEvents(session);
 
-    initialContext.addMessage({
-      role: 'assistant',
-      content: `The user name is ${ctx.proc.userData.name ?? 'test'}`,
-    });
+      const usageCollector = new metrics.UsageCollector();
 
-    await session.start({
-      agent: new Triage(initialContext),
-      room: ctx.room,
-    });
+      session.on(voice.AgentSessionEventTypes.MetricsCollected, (ev) => {
+        metrics.logMetrics(ev.metrics);
+        usageCollector.collect(ev.metrics);
+      });
 
-    await ctx.connect();
+      const logUsage = async () => {
+        const summary = usageCollector.getSummary();
+        console.log(`Usage: ${JSON.stringify(summary)}`);
+      };
+
+      ctx.addShutdownCallback(logUsage);
+
+      const initialContext = llm.ChatContext.empty();
+
+      initialContext.addMessage({
+        role: 'assistant',
+        content: `Patient promptuary: ${JSON.stringify(ctx.proc.userData.patientPromptuary)}`,
+      });
+
+      await ctx.connect();
+
+      ctx.onParticipantConnected((remoteParticipant: RemoteParticipant) => {
+        console.log(`Participant ${remoteParticipant} connected at the room ${ctx.room.name}`);
+      });
+
+      ctx.addParticipantEntrypoint((job: JobContext, participant: RemoteParticipant) => {
+        console.log(`Participant ${participant} entered the job ${job}`);
+      });
+
+      await ctx.waitForParticipant();
+
+      registerRoomEvents(ctx.room);
+
+      await session.start({
+        agent: new Triage(initialContext),
+        room: ctx.room,
+        inputOptions: {
+          audioEnabled: true,
+          videoEnabled: true,
+          textEnabled: true,
+          textInputCallback,
+        },
+        outputOptions: {
+          audioEnabled: true,
+          syncTranscription: true,
+          transcriptionEnabled: true,
+        },
+      });
+    } catch (error: Error | unknown) {
+      console.error('Fatal error in agent entry:', {
+        message: (error as Error)?.message,
+        stack: (error as Error)?.stack,
+      });
+
+      throw error;
+    }
   },
 });
 
@@ -91,6 +136,23 @@ cli.runApp(
     agent: fileURLToPath(import.meta.url),
     agentName: Triage.AGENT_NAME,
     permissions: new WorkerPermissions(true, true, true, false, undefined, false),
-    workerType: 0, // JT_ROOM,
   }),
 );
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception thrown:', err);
+});
+
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing agent.');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT signal received: closing agent.');
+  process.exit(0);
+});

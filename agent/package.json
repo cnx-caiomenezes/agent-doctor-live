@@ -47,7 +47,7 @@
     "format:check": "prettier . --check \"**/*.{ts,js,json,md}\"",
     "test": "node --test --import tsx",
     "test:watch": "node --test --watch --import tsx",
-    "dev": "tsx src/main.ts dev",
+    "dev": "tsx watch src/main.ts dev",
     "download-files": "pnpm run build && node dist/main.js download-files",
     "start": "node dist/main.js start"
   },
