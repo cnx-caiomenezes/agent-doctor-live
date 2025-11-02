@@ -1,5 +1,5 @@
 {
-  "name": "meeting-doctor-live-conexa",
+  "name": "@conexasaude/room",
   "version": "1.0.0",
   "private": true,
   "scripts": {

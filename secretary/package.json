@@ -1,0 +1,41 @@
+{
+  "name": "@conexasaude/secretary",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "module": "dist/main.js",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "tsx watch --env-file=.env.local src/main.ts dev",
+    "build": "tsc",
+    "lint": "eslint -f unix \"**/*.ts\"",
+    "format": "prettier --write \"**/*.ts\""
+  },
+  "dependencies": {
+    "@fastify/auth": "^5.0.3",
+    "@fastify/cors": "^10.0.1",
+    "@fastify/helmet": "^13.0.2",
+    "@fastify/jwt": "^10.0.0",
+    "@fastify/postgres": "^6.0.2",
+    "@fastify/redis": "^7.1.0",
+    "@fastify/sensible": "^6.0.3",
+    "@livekit/protocol": "^1.42.2",
+    "fastify": "^5.2.0",
+    "livekit-server-sdk": "^2.14.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.39.0",
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@types/node": "^22.18.13",
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "pino-pretty": "^13.1.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "pnpm@9.15.9"
+}
