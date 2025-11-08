@@ -1,0 +1,36 @@
+{
+  "name": "@conexasaude/agent-doctor-live",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-Powered Video/Audio Meeting Platform with Agent Assistance",
+  "author": {
+    "name": "Conexa Saúde",
+    "email": "engineering@conexasaude.com.br",
+    "url": "https://www.conexasaude.com.br"
+  },
+  "license": "UNLICENSED",
+  "workspaces": [
+    "manager",
+    "secretary",
+    "agent",
+    "room",
+    "shared"
+  ],
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "pnpm --parallel --stream -r dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "pnpm -r clean && rm -rf node_modules",
+    "db:migrate": "pnpm --filter manager db:migrate",
+    "db:seed": "pnpm --filter manager db:seed",
+    "db:reset": "pnpm --filter manager db:reset"
+  }
+}

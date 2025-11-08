@@ -1,0 +1,106 @@
+services:
+  # PostgreSQL 16 with pgvector extension
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: agent-doctor-live-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: agent_doctor_live
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d agent_doctor_live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agent-doctor-live
+
+  # Redis 7 for caching and session management
+  redis:
+    image: redis:7-alpine
+    container_name: agent-doctor-live-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ""
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agent-doctor-live
+
+  # LiveKit Server for WebRTC media routing
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: agent-doctor-live-livekit
+    restart: unless-stopped
+    command: --config /etc/livekit.yaml
+    ports:
+      - "7880:7880" # HTTP API
+      - "7881:7881" # WebSocket
+      - "7882:7882/udp" # RTC/UDP
+      - "50000-60000:50000-60000/udp" # Media ports
+    volumes:
+      - ./docker/livekit.yaml:/etc/livekit.yaml:ro
+    environment:
+      LIVEKIT_KEYS: "devkey: secret"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - agent-doctor-live
+
+  # MinIO for S3-compatible object storage (recordings)
+  minio:
+    image: minio/minio:latest
+    container_name: agent-doctor-live-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Console UI
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - agent-doctor-live
+
+  # MailHog for email testing in development
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: agent-doctor-live-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    networks:
+      - agent-doctor-live
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+    driver: local
+
+networks:
+  agent-doctor-live:
+    driver: bridge

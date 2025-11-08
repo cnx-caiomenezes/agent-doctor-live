@@ -9,6 +9,8 @@
 
 ### User Story 1 - Entity Administrator Configures Organization (Priority: P1)
 
+**Working directory**: `/agent-doctor-live/manager`
+
 An entity administrator (representing a clinic, company, or organization) needs to configure their organization's settings, including default AI agent instructions that will apply to all meetings within their organization.
 
 **Why this priority**: This is foundational - without entity configuration, the platform cannot function. It establishes the organizational context for all subsequent features.
@@ -19,12 +21,19 @@ An entity administrator (representing a clinic, company, or organization) needs 
 
 1. **Given** an administrator has valid credentials, **When** they log into the manager interface, **Then** they can access the entity configuration dashboard
 2. **Given** an administrator is on the entity configuration page, **When** they set a default system prompt for AI agents (e.g., "Provide medical consultation guidelines"), **Then** the prompt is saved and applies to all new meetings
-3. **Given** an entity has been configured, **When** the administrator views entity settings, **Then** they see the organization name, type (medical clinic, design agency, etc.), and default AI instructions
-4. **Given** an administrator wants to customize behavior, **When** they upload policy documents (PDFs) to the vector database, **Then** these documents inform the AI agent's context in meetings
+3. **Given** an administrator is configuring entity settings, **When** they set participant capacity limits (e.g., max 50 participants), **Then** these limits are enforced during meeting scheduling
+4. **Given** an entity has been configured, **When** the administrator views entity settings, **Then** they see the organization name, type (medical clinic, design agency, etc.), and default AI instructions
+5. **Given** an administrator wants to customize behavior, **When** they upload policy documents (PDFs) to the vector database, **Then** these documents inform the AI agent's context in meetings
+6. **Given** an administrator has made changes to entity settings, **When** they save the configuration, **Then** the system confirms successful update and persists changes
+7. **Given** an entity is configured, **When** a user schedules a meeting under that entity, **Then** the default AI prompt is automatically applied unless overridden
+8. **Given** an administrator sets recording retention policy (30 days, 90 days, or 1 year), **When** they save the setting, **Then** all recordings for that entity adhere to the specified retention duration
+9. **Given** an administrator logged in, **When** access the profile configuration, **Then** it should be possible to change the password and update email address
 
 ---
 
 ### User Story 2 - User Schedules a Meeting Room (Priority: P1)
+
+**Working directory**: `/agent-doctor-live/secretary`
 
 A user needs to schedule a video/audio meeting room for a specific purpose (corporate meeting, webinar, online class, or social gathering), with customized AI agent instructions based on the meeting context.
 
@@ -36,32 +45,46 @@ A user needs to schedule a video/audio meeting room for a specific purpose (corp
 
 1. **Given** a user is authenticated, **When** they access the secretary API scheduling interface, **Then** they can create a new meeting with title, date/time, and participant capacity
 2. **Given** a user is creating a meeting, **When** they specify a custom AI prompt (e.g., "Focus on design review feedback" or "Medical consultation for cardiology"), **Then** the system combines this with the entity's default prompt
-3. **Given** a meeting has been scheduled, **When** the system generates access credentials, **Then** the user receives both an access token and a magic link for direct room entry
-4. **Given** a meeting exists, **When** the user shares the magic link with participants, **Then** participants can join without additional authentication
-5. **Given** an entity has participant capacity limits configured, **When** a user schedules a meeting, **Then** the system enforces the maximum participant count for that entity
+3. **Given** a user is creating a meeting, **When** providing the meeting participants, **Then** it should allow adding by email or phone number.
+4. **Given** meeting created, **When** finished, **Then** it should send a confirmation email to the meeting organizer with meeting details in the email (if provided email) or whatsapp (if provided phone number).
+5. **Given** a meeting has been scheduled, **When** the system generates access credentials, **Then** the user receives magic link for direct room entry
+6. **Given** a meeting exists, **When** the system sent the magic link for participants via email/whatsapp **Then** participants can join providing a password (8 numbers) sent in the email/whatsapp.
+7. **Given** an entity has participant capacity limits configured, **When** a user schedules a meeting, **Then** the system enforces the maximum participant count for that entity
+8. **Given** a meeting is scheduled, **When** the user views their upcoming meetings, **Then** the scheduled meeting appears with details including title, date/time, and access link
+9. **Given** a user has scheduled a meeting, **When** they need to cancel it, **Then** they can do so via the scheduling interface and all participants are notified of the cancellation
+10. **Given** a user is scheduling a meeting, **When** they attempt to exceed the entity's participant capacity, **Then** the system prevents scheduling and displays an appropriate error message
 
 ---
 
 ### User Story 3 - Participant Joins and Interacts in Meeting Room (Priority: P1)
 
+**Working directory**: `/agent-doctor-live/room`
+
 A participant needs to join a scheduled meeting room using their access link, interact with other participants through video/audio/chat, and share their screen when needed.
 
 **Why this priority**: This is the core meeting experience that delivers the primary value proposition of the platform.
 
-**Independent Test**: Participant can click a magic link, join the room with audio/video enabled, see other participants, send chat messages, and share their screen. This demonstrates the complete meeting interaction capability.
+**Independent Test**: Participant can click a magic link, join in a staging area to check your audio/video settings, provide the password passed in the scheduled event email, see other participants, send chat messages, and share their screen. This demonstrates the complete meeting interaction capability.
 
 **Acceptance Scenarios**:
 
-1. **Given** a participant has a magic link, **When** they click it, **Then** they join the meeting room directly without additional login steps
-2. **Given** a participant is in the room, **When** they enable their camera and microphone, **Then** other participants can see and hear them
-3. **Given** multiple participants are in the room, **When** they communicate, **Then** the system handles concurrent audio/video streams without degradation
-4. **Given** a participant wants to present, **When** they initiate screen sharing, **Then** their screen is visible to all participants
-5. **Given** a participant wants to communicate via text, **When** they send a chat message, **Then** all participants see the message in real-time
-6. **Given** a meeting is in progress, **When** network conditions change, **Then** the system adapts quality to maintain connection (graceful degradation)
+1. **Given** a participant has a magic link, **When** they click it, **Then** they join in the staging area to check your audio/video settings
+2. **Given** a participant in the staging area **When** they clicked to join room **Then** it should show a small input field asking the password sent in the event scheduled email
+3. **Given** a participant is in the room, **When** they enable their camera and microphone, **Then** other participants can see and hear them
+4. **Given** multiple participants are in the room, **When** they communicate, **Then** the system handles concurrent audio/video streams without degradation
+5. **Given** a participant wants to present, **When** they initiate screen sharing, **Then** their screen is visible to all participants
+6. **Given** a participant wants to communicate via text, **When** they send a chat message, **Then** all participants see the message in real-time
+7. **Given** a meeting is in progress, **When** network conditions change, **Then** the system adapts quality to maintain connection (graceful degradation)
+8. **Given** a participant leaves the meeting, **When** they disconnect, **Then** other participants are notified of their departure
+9. **Given** a participant experiences network issues, **When** they reconnect, **Then** they rejoin the meeting without losing context
+10. **Given** an agent in the room, **When** a participants interacts, **Then** the agent responds based on the combined context (custom prompt + default prompt + knowledge base)
+11. **Given** an agent in the room, **When** agent needs to provide tips, info etc..., **Then** it should show in a dedicated panel or overlay in the room interface, so it does not interrupt the meeting flow.
 
 ---
 
 ### User Story 4 - AI Agent Provides Contextual Assistance (Priority: P2)
+
+**Working directory**: `/agent-doctor-live/agent`
 
 During a meeting, an AI agent monitors the conversation and provides contextual tips, suggestions, and guidance based on the meeting's custom prompt, entity default instructions, and uploaded reference documents.
 
@@ -76,45 +99,19 @@ During a meeting, an AI agent monitors the conversation and provides contextual 
 3. **Given** the entity uploaded policy PDFs, **When** the AI agent receives a query related to those policies, **Then** it retrieves relevant information from the vector database and presents it
 4. **Given** a meeting is ongoing, **When** the AI agent detects potential misunderstandings or gaps in discussion, **Then** it proactively offers clarifying information
 5. **Given** participants interact with the AI agent, **When** they ask direct questions, **Then** the agent responds based on the combined context (custom prompt + default prompt + knowledge base)
+6. **Given** an agent in the room, **When** a participant requests additional resources, **Then** the agent provides relevant documents or links in the dedicated panel or overlay
+7. **Given** the AI agent is active, **When** it encounters a situation outside its knowledge base, **Then** it gracefully indicates its limitations without disrupting the meeting flow
+8. **Given** the AI agent is providing suggestions, **When** participants find them useful or not, **Then** they can provide feedback (thumbs up/down) to help improve future responses
+9. **Given** the AI agent is connected to a room, **When** the meeting ends, **Then** the agent logs its interactions and suggestions for analytics and performance monitoring
+10. **Given** a participant wants to disable AI assistance, **When** they toggle the AI agent off, **Then** the agent ceases providing suggestions for the remainder of the meeting, and other participants are notified of this change and it should be possible to enable it again.
+11. **Given** an interaction **When** the agent receives the event, **Then** it should store in a database the interaction including timestamp, participant who triggered it, type of interaction (suggestion, answer to question, proactive tip), and content provided.
+12. **Given** an room, participant or any other LiveKit related event **When** the agent receives the event, **Then** it should store in a database the event name including timestamp, participant (if is a participant related event), room (if is a room related event) and data (JSON with event specific data).
 
 ---
 
-### User Story 5 - Meeting Recording and Playback (Priority: P2)
+### User Story 5 - Administrator Monitors Platform Usage and Analytics (Priority: P3)
 
-Users need the ability to record meetings for later review, compliance, training purposes, or for participants who couldn't attend.
-
-**Why this priority**: Recording is valuable but not essential for basic platform operation. It enables asynchronous value from meetings.
-
-**Independent Test**: User can start/stop recording during a meeting, access recorded sessions afterward, and play them back with full audio/video/chat history.
-
-**Acceptance Scenarios**:
-
-1. **Given** a user has appropriate permissions, **When** they initiate recording during a meeting, **Then** the system captures all audio, video, screen shares, and chat messages
-2. **Given** a recording is in progress, **When** participants join or leave, **Then** the recording continues without interruption
-3. **Given** a meeting has ended, **When** the user accesses the recording library, **Then** they can view, download, or share the recorded session
-4. **Given** a recorded session includes AI agent interactions, **When** playing back the recording, **Then** agent suggestions and tips are visible in the timeline
-5. **Given** privacy requirements exist, **When** recording is enabled, **Then** all participants receive a clear notification that the session is being recorded
-
----
-
-### User Story 6 - User Profile and Preference Management (Priority: P3)
-
-Users need to manage their personal profiles, including display name, avatar, notification preferences, and default audio/video settings.
-
-**Why this priority**: While important for user experience, profile management is not critical for core platform functionality. It enhances personalization.
-
-**Independent Test**: User can access profile settings, update their information, configure preferences, and see those changes reflected in subsequent meetings.
-
-**Acceptance Scenarios**:
-
-1. **Given** a user is authenticated, **When** they access their profile, **Then** they can update their display name, email, and avatar
-2. **Given** a user has preferences for audio/video settings, **When** they configure default microphone/camera settings, **Then** these defaults apply when joining future meetings
-3. **Given** a user wants to control notifications, **When** they adjust notification preferences, **Then** they receive meeting reminders and updates according to their settings
-4. **Given** a user participates in meetings, **When** they view their meeting history, **Then** they see a list of past and upcoming scheduled sessions
-
----
-
-### User Story 7 - Administrator Monitors Platform Usage and Analytics (Priority: P3)
+**Working directory**: `/agent-doctor-live/manager`
 
 Entity administrators need visibility into platform usage, meeting statistics, AI agent performance, and participant engagement to optimize their organization's use of the platform.
 
@@ -159,18 +156,17 @@ Entity administrators need visibility into platform usage, meeting statistics, A
 
 #### Secretary API (Room Scheduling & Access Management)
 
-- **FR-001**: System MUST allow authenticated entity administrators to create and configure entity profiles with organization name, type (medical clinic, design agency, educational institution, etc.), and participant capacity limits
-- **FR-002**: System MUST allow entity administrators to set default AI agent system prompts that apply to all meetings within their organization
-- **FR-003**: System MUST allow entity administrators to upload reference documents (PDFs) that are processed and stored in a vector database for AI agent context retrieval
-- **FR-004**: System MUST allow authenticated users to schedule meeting rooms with title, description, date/time, and expected participant count
-- **FR-005**: System MUST allow users to provide custom AI agent prompts specific to each scheduled meeting's context
-- **FR-006**: System MUST generate unique access tokens for each scheduled meeting that authorize participant entry
-- **FR-007**: System MUST generate magic links (tokenized URLs) for each scheduled meeting that allow direct room access without additional authentication
-- **FR-008**: System MUST enforce entity-specific participant capacity limits when creating meeting rooms
-- **FR-009**: System MUST store scheduled meeting metadata including organizer, entity association, custom prompts, and access credentials
-- **FR-010**: System MUST provide API endpoints for listing, updating, and canceling scheduled meetings
-- **FR-011**: System MUST validate access tokens and magic links before allowing participants to join rooms
-- **FR-012**: System MUST track meeting lifecycle states (scheduled, active, completed, canceled)
+**Working directory**: `/agent-doctor-live/secretary`
+
+- **FR-001**: System MUST allow authenticated users or via service accounts integration to schedule meeting rooms with title, description, date/time, and expected participant count, and participants info (email or phone number).
+- **FR-002**: System MUST allow users to provide custom AI agent prompts specific to each scheduled meeting's context
+- **FR-003**: System MUST generate unique access tokens for each scheduled meeting that authorize participant entry
+- **FR-004**: System MUST generate magic links (tokenized URLs) for each scheduled meeting that allow staging area (check audio/video settings) access with simple password (8 numbers) to enter the room
+- **FR-005**: System MUST enforce entity-specific participant capacity limits when creating meeting rooms
+- **FR-006**: System MUST store scheduled meeting metadata including organizer, entity association, custom prompts, and access credentials
+- **FR-007**: System MUST provide API endpoints for listing, updating, and canceling scheduled meetings
+- **FR-008**: System MUST validate access tokens and magic links before allowing participants to join rooms
+- **FR-009**: System MUST track meeting lifecycle states (scheduled, active, completed, canceled)
 
 #### Meeting Server (Media Handling & Room Connections)
 
@@ -200,41 +196,46 @@ Entity administrators need visibility into platform usage, meeting statistics, A
 - **FR-033**: System MUST log agent interactions and suggestions for analytics and performance monitoring
 - **FR-034**: System MUST handle agent failures gracefully without disrupting the meeting
 - **FR-035**: System MUST allow participants to enable/disable AI agent participation during meetings
+- **FR-036**: System MUST save all events related to the agent including interactions, participant, room and LiveKit events in a database for future analysis.
+- **FR-037**: System MUST store the transcriptions of the meetings in a database for future analysis.
 
 #### Manager Application (Web UI & Administration)
 
-- **FR-036**: System MUST provide server-side rendered web application for user authentication and session management
-- **FR-037**: System MUST allow entity administrators to view and edit organization settings including default system prompts
-- **FR-038**: System MUST allow entity administrators to configure recording retention policies (30 days, 90 days, or 1 year)
-- **FR-039**: System MUST provide interface for uploading and managing reference documents (PDFs) for AI context
-- **FR-040**: System MUST allow users to create, view, update, and cancel scheduled meetings through web interface
-- **FR-041**: System MUST allow users to customize AI prompts for individual meetings during scheduling
-- **FR-042**: System MUST display user's upcoming and past meeting history with access links
-- **FR-043**: System MUST allow users to manage their profile information (name, email, avatar, preferences)
-- **FR-044**: System MUST provide analytics dashboard showing meeting statistics, AI agent usage, and participant engagement
-- **FR-045**: System MUST allow users to access and playback recorded meeting sessions (within retention period)
-- **FR-046**: System MUST display entity-level capacity usage and limits to administrators
-- **FR-047**: System MUST support role-based access control (entity admin vs. regular user permissions)
+- **FR-038**: System MUST allow authenticated entity administrators to create and configure entity profiles with organization name, type (medical clinic, design agency, educational institution, etc.), and participant capacity limits
+- **FR-039**: System MUST allow entity administrators to set default AI agent system prompts that apply to all meetings within their organization
+- **FR-040**: System MUST allow entity administrators to upload reference documents (PDFs) that are processed and stored in a vector database for AI agent context retrieval
+- **FR-041**: System MUST provide server-side rendered web application for user authentication and session management
+- **FR-042**: System MUST allow entity administrators to view and edit organization settings including default system prompts
+- **FR-043**: System MUST allow entity administrators to configure recording retention policies (30 days, 90 days, or 1 year)
+- **FR-044**: System MUST provide interface for uploading and managing reference documents (PDFs) for AI context
+- **FR-045**: System MUST allow users to create, view, update, and cancel scheduled meetings through web interface
+- **FR-046**: System MUST allow users to customize AI prompts for individual meetings during scheduling
+- **FR-047**: System MUST display user's upcoming and past meeting history with access links
+- **FR-048**: System MUST allow users to manage their profile information (name, email, avatar, preferences)
+- **FR-049**: System MUST provide analytics dashboard showing meeting statistics, AI agent usage, and participant engagement
+- **FR-050**: System MUST allow users to access and playback recorded meeting sessions (within retention period)
+- **FR-051**: System MUST display entity-level capacity usage and limits to administrators
+- **FR-052**: System MUST support role-based access control (entity admin vs. regular user permissions)
 
 #### Room Frontend Module (Meeting Experience)
 
-- **FR-048**: System MUST provide web-based meeting room interface accessible via magic links or access tokens
-- **FR-049**: System MUST detect and request necessary permissions for camera and microphone access
-- **FR-050**: System MUST display video feeds for all active participants in a responsive grid layout
-- **FR-051**: System MUST provide controls for enabling/disabling camera, microphone, and screen sharing
-- **FR-052**: System MUST display real-time chat messages with participant identification
-- **FR-053**: System MUST show AI agent suggestions and tips in a dedicated panel or overlay
-- **FR-054**: System MUST indicate when recording is active with clear visual indicators
-- **FR-055**: System MUST display participant list with join/leave notifications
-- **FR-056**: System MUST provide network quality indicators and troubleshooting information
-- **FR-057**: System MUST support responsive design for desktop, tablet, and mobile devices
-- **FR-058**: System MUST handle pre-join device testing (camera/microphone check before entering room)
+- **FR-053**: System MUST provide web-based meeting room interface accessible via magic links or access tokens
+- **FR-054**: System MUST detect and request necessary permissions for camera and microphone access
+- **FR-055**: System MUST display video feeds for all active participants in a responsive grid layout
+- **FR-056**: System MUST provide controls for enabling/disabling camera, microphone, and screen sharing
+- **FR-057**: System MUST display real-time chat messages with participant identification
+- **FR-058**: System MUST show AI agent suggestions and tips in a dedicated panel or overlay
+- **FR-059**: System MUST indicate when recording is active with clear visual indicators
+- **FR-060**: System MUST display participant list with join/leave notifications
+- **FR-061**: System MUST provide network quality indicators and troubleshooting information
+- **FR-062**: System MUST support responsive design for desktop, tablet, and mobile devices
+- **FR-063**: System MUST handle pre-join device testing (camera/microphone check before entering room)
 
 ### Key Entities
 
 - **Entity**: Represents an organization (clinic, company, educational institution, etc.) that uses the platform. Attributes include organization name, type/category, default AI agent system prompts, participant capacity limits, recording retention policy (30 days, 90 days, or 1 year), uploaded reference documents, and active status.
 
-- **User**: Represents individuals who schedule and participate in meetings. Attributes include authentication credentials, display name, email, profile avatar, role (entity admin or regular user), associated entity, notification preferences, and meeting history.
+- **User**: Represents individuals who schedule and participate in meetings. Attributes include authentication credentials, display name, email, profile avatar, role (entity admin, client or professional), associated entity, notification preferences, and meeting history.
 
 - **Meeting Room**: Represents a scheduled or active video/audio meeting session. Attributes include unique identifier, title, description, scheduled date/time, organizer reference, entity association, custom AI prompt for the meeting, participant capacity limit, access token, magic link, current state (scheduled/active/completed/canceled), and actual participant count.
 
@@ -324,8 +325,8 @@ The platform follows a modular microservices architecture with clear separation 
 
 - **Secretary**: Handles scheduling, access control, and entity configuration (TypeScript/Fastify + PostgreSQL)
 - **Meeting Server**: Self-hosted LiveKit server managing WebRTC media and room state
-- **Agent**: AI assistant module connecting to rooms and providing contextual guidance (TypeScript/LiveKit Agents SDK)
-- **Manager**: Server-side rendered web application for administration and user management (Next.js or similar SSR framework)
+- **Agent**: AI assistant(S) module connecting to rooms and providing contextual guidance (TypeScript/LiveKit Agents SDK)
+- **Manager**: Server-side rendered web application for administration and user management (Server side rendering with HTMX + Fastify)
 - **Room**: Client-side meeting experience (React-based SPA integrating with LiveKit client SDK)
 
 ### AI Agent Context Hierarchy
